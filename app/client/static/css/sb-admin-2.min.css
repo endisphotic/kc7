@@ -8743,6 +8743,13 @@ a:focus{
     background-position:center;
     background-size:cover
 }
+
+.bg-password-image-2{
+    background:url(https://source.unsplash.com/dk4en2rFOIE/600x800);
+    background-position:center;
+    background-size:cover
+}
+
 form.user .custom-checkbox.small label{
     line-height:1.5rem
 }

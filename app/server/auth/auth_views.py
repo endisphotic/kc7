@@ -8,6 +8,10 @@ from flask_login import login_user, logout_user , current_user , \
 from app.server.models import *
 from app.server.auth.forms import EmailForm, PasswordForm
 from app.server.utils import *
+from flask import current_app
+from app.server.security import ts
+from flask_mail import Message
+from app import mail
 
 
 # Define the blueprint: 'auth', set its url prefix: app.url/auth
@@ -45,7 +49,7 @@ def logout():
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        teams = Team.query.all()
+        teams = Team.query.filter(Team.name!="admins").all()
         return render_template('auth/register.html', teams=teams)
     username = request.form['username']
     password = request.form['password']
@@ -84,31 +88,41 @@ def register():
 
 @auth.route('/reset', methods=["GET", "POST"])
 def reset():
+    if request.method == 'GET':
+        return render_template("auth/reset.html")
+
     form = EmailForm()
-    if form.validate_on_submit():
+    try:
         user = Users.query.filter_by(email=form.email.data).first_or_404()
+    except Exception as e:
+        print(e)
+        flash('No such user', "error")
+        return redirect(url_for('auth.reset'))
 
-        subject = "Password reset requested"
+    subject = "Password reset requested"
+    print(subject)
 
-        # Here we use the URLSafeTimedSerializer we created in `util` at the
-        # beginning of the chapter
-        token = ts.dumps(user.email, salt='recover-key')
+    # Here we use the URLSafeTimedSerializer we created in `util` at the
+    # beginning of the chapter
+    token = ts.dumps(user.email, salt='recover-key')
 
-        recover_url = url_for(
-            'reset_with_token',
-            token=token,
-            _external=True)
+    recover_url = url_for(
+        'auth.reset_with_token',
+        token=token,
+        _external=True)
 
-        html = render_template(
-            'email/recover.html',
-            recover_url=recover_url)
+    html = render_template(
+        'auth/recover.html',
+        recover_url=recover_url)
 
-        # send_email is defined in myapp/util.py
-        send_email(subject, user.email, html)
+    # send_email is defined in myapp/util.py
+    send_email(subject, user.email, html)
 
-        flash('Check your email for a password reset link', "success")
-        return redirect(url_for('main.index'))
-    return render_template('auth/reset.html', form=form)
+    flash('Check your email for a password reset link', "success")
+
+    return redirect(url_for('auth.login'))
+
+    # return render_template('auth/reset.html', form=form)
 
 
 @auth.route('/reset/<token>', methods=["GET", "POST"])
@@ -131,3 +145,11 @@ def reset_with_token(token):
         return redirect(url_for('auth.login'))
 
     return render_template('auth/reset_with_token.html', form=form, token=token)
+
+# project/email.py  
+def send_email(to, subject, template): 
+    print("sending email")
+    # msg = Message( subject, recipients=[to], html=template, sender=current_app.config['MAIL_USERNAME'] ) 
+    msg = Message( subject, recipients=['skakpovi@gmail.com'], html=template, sender=current_app.config['MAIL_USERNAME'] ) 
+    mail.send(msg)
+    print("password reset email sent")

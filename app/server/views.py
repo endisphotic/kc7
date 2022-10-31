@@ -1,4 +1,5 @@
 
+from email.errors import CharsetError
 import json
 import random
 import yaml
@@ -12,7 +13,7 @@ from sqlalchemy import asc
 from sqlalchemy.sql.expression import func, select
 
 # Import module models (i.e. Company, Employee, Actor, DNSRecord)
-from app.server.models import db, Team, Users, Roles, GameSession
+from app.server.models import db, Team, Users, Roles, GameSession, Solves, Challenges
 from app.server.modules.organization.Company import Company, Employee
 from app.server.modules.clock.Clock import Clock
 from app.server.modules.logging.uploadLogs import LogUploader
@@ -251,6 +252,81 @@ def teams():
     team_list = Team.query.all()
     return render_template("main/teams.html",
                            teams=team_list)
+
+
+
+##################
+# Challenge solves
+#################
+@main.route("/challenges")
+@login_required
+def challenges():
+    challenges = Challenges.query.all()
+    solves = Solves.query.all()
+    users = Users.query.all()
+    return render_template("main/challenges.html", challenges=challenges, solves=solves, users=users)
+
+@main.route("/rankings")
+@login_required
+def rankings():
+    users = Users.query.all()
+    return render_template("main/rankings.html", users=users)
+
+
+@main.route('/addchallenge', methods=['POST', 'GET'])
+@login_required
+@roles_required('Admin')
+def create_challenge():
+    name =  request.form['challenge_name']
+    value = request.form['value']
+    description = request.form['description']
+    answer = request.form['answer']
+    challenge = Challenges(name=name, description=description, answer=answer, value=value)
+    db.session.add(challenge)
+    db.session.commit()
+    flash(f"Added new challenge: {challenge.name}", "success")
+    return redirect(url_for('main.challenges'))
+                           
+@main.route('/deletechallenge', methods=['POST', 'GET'])
+@login_required
+@roles_required('Admin')
+def delete_challenge():
+    try:
+        challenge_id = request.form['challenge_id']
+        challenge = db.session.query(Challenges).get(challenge_id)
+        db.session.delete(challenge)
+        db.session.commit()
+        flash("Challenge removed!", 'success')
+    except Exception as e:
+        print("Error: %s" % e)
+        flash("Failed to remove challenge", 'error')
+
+    return redirect(url_for('main.challenges'))
+                           
+
+@main.route('/solve', methods=['POST', 'GET'])
+@login_required
+def solve_challenge():
+    answer = request.form['answer']
+    challenge_id = request.form['challenge_id']
+    challenge = db.session.query(Challenges).get(challenge_id)
+    print(challenge.solvers)
+    if answer == challenge.answer:
+        print("answer is correct")
+        try:
+            solve = Solves(challenge_id=challenge_id, user_id=current_user.id)
+            db.session.add(solve)
+            db.session.commit()
+            flash("Correct", "success")
+        except Exception as e:
+            print(e)
+            print("already solved")
+            flash("Looks like you already solved this challenge", "error")
+    else:
+        print("incorrect answer")
+        flash(f"Incorrect answer for {challenge.name}, try again", "error")
+
+    return redirect(url_for('main.challenges'))
 
 
 @login_required
