@@ -6,9 +6,11 @@
   
 
 <!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-  <h1 class="h3 mb-0 text-gray-800">Rankings</h1>
-</div>
+<section class="jumbotron text-center">
+  <div class="container">
+    <h1 class="jumbotron-heading">🏆 Scoreboard </h1>
+  </div>
+</section>
 
 
 <!-- Begin Page Content -->
@@ -21,7 +23,7 @@
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <table class="table table-hover table-sm" id="dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>Place</th>
@@ -32,7 +34,7 @@
           <tbody>
             {% for user in users %}
             <tr>
-              <td>{{ user.place }}</td>
+              <th scope="row">{{ user.place }}</th>
               <td>{{ user.username }}</td>
               <td>{{ user.score }} </td>
             </tr>

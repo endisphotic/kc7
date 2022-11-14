@@ -33,9 +33,7 @@ main = Blueprint('main', __name__)
 @main.route("/")
 def home():
     print("initialization complete...")
-
-    return render_template("main/score.html")
-
+    return redirect(url_for('main.rankings'))
 
 
 @main.route("/scoreboard")
@@ -267,9 +265,8 @@ def challenges():
     return render_template("main/challenges.html", challenges=challenges, solves=solves, users=users)
 
 @main.route("/rankings")
-@login_required
 def rankings():
-    users = Users.query.all()
+    users = Users.query.filter(Users.username!="admin").all()
     return render_template("main/rankings.html", users=users)
 
 

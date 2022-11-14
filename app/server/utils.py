@@ -169,6 +169,7 @@ def get_user_standings():
         )
         .join(Challenges)
         .filter(Challenges.value != 0)
+        .filter(Solves.user_id != 1)
         .group_by(Solves.user_id)
         .subquery()
     )

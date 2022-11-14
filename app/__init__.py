@@ -8,8 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, g
 from flask_login import LoginManager, current_user
 from flask_security import Security, SQLAlchemyUserDatastore
-
-
+from flask_caching import Cache
+from flask_mail import Mail
 
 application = Flask(
             __name__,
@@ -32,6 +32,8 @@ app.config.from_object('config.DevelopmentConfig')
 # Define the database object which is imported
 # by modules and views
 db = SQLAlchemy(app)
+cache = Cache(app)
+mail = Mail(app)
 
 # Import a module / component using its blueprint handler variable (mod_auth)
 from app.server.views import main

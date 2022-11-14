@@ -144,7 +144,15 @@ class Users(AuthBase, RoleMixin):
                 n = i + 1
                 if numeric:
                     return n
-                return ordinalize(n)
+                ranking =  ordinalize(n)
+                if ranking == "1st":
+                    return ranking + "  🥇"
+                elif ranking == "2nd":
+                    return ranking + "  🥈"
+                elif ranking == "3rd":
+                    return ranking + "  🥉"
+                else: 
+                    return ranking
         else:
             return None
 
