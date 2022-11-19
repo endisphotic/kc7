@@ -3,6 +3,8 @@ from email.errors import CharsetError
 import json
 import random
 import yaml
+import csv
+import io
 from datetime import datetime
 from flask_login import login_required, current_user
 from flask_security import roles_required
@@ -11,6 +13,8 @@ from flask import Blueprint, request, render_template, \
     flash, g, session, redirect, url_for, abort, current_app, jsonify
 from sqlalchemy import asc
 from sqlalchemy.sql.expression import func, select
+from werkzeug.utils import secure_filename
+
 
 # Import module models (i.e. Company, Employee, Actor, DNSRecord)
 from app.server.models import db, Team, Users, Roles, GameSession, Solves, Challenges
@@ -283,6 +287,45 @@ def create_challenge():
     db.session.commit()
     flash(f"Added new challenge: {challenge.name}", "success")
     return redirect(url_for('main.challenges'))
+
+
+@main.route('/addchallengebulk', methods=['POST', 'GET'])
+@login_required
+@roles_required('Admin')
+def create_challenges_from_file():
+    """Take a CSV and use it to  questions"""
+    print("received a file")
+    # Get the name of the uploaded file
+    file = request.files['file']
+    
+    # Check if the file is one of the allowed types/extensions
+    if file and ".csv" in file.filename:   ### make this better
+        # Make the filename safe, remove unsupported chars
+        filename = secure_filename(file.filename)
+
+        with io.TextIOWrapper(request.files["file"], encoding="utf-8", newline='\n') as text_file:
+            reader = csv.reader(text_file, delimiter=';')                
+            for row in reader:
+                print(row)
+                if isinstance(row, list):
+                    row = row[0].split(",")
+                if row[0].lower() == "name":
+                    # this is the header
+                    continue
+                name = row[0]
+                value = row[1]
+                description = row[2]
+                answer = row[3]
+
+                challenge = Challenges(name=name, description=description, answer=answer, value=value)
+                db.session.add(challenge)
+    else:
+        flash("Not a valid file format. Only CSV files are allowed.", "error")
+    db.session.commit()
+    flash(f"Added new challenges from csv", "success")
+
+    return redirect(url_for('main.challenges'))
+
 
 @main.route('/editchallenge', methods=['POST', 'GET'])
 @login_required

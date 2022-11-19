@@ -284,7 +284,6 @@ class Challenges(db.Model):
         """Take a list of user_ids for solvers and returns their names"""
         return list(set([solver.username for solver in self.get_solvers()]))
 
-
     def get_solvers(self):
         return Solves.query.filter_by(challenge_id=self.id)
         

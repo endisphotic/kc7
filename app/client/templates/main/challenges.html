@@ -42,8 +42,28 @@
       </form>
     </div>
   </div>
-  {% endif %}
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Add a new challenge (via csv)</h6>
+    </div>
+    <div class="card-body">
+      <form method="POST"  enctype="multipart/form-data" action="{{ url_for('main.create_challenges_from_file') }}" id="fileuploadform">
+        <div class="form-group">
+          <label for="formUpload" class="form-label">Click to upload file (Must be csv with columns: Name, Value, Description, Answer)</label>
+            <input class="form-control" type="file" name="file" required>
+        </div>
+        <div class="form-group">
+          <input type="submit" class="btn btn-primary btn-block" value="Submit">
+      </div>
+      </form>
+
+    </div>
+  </div>
+
   
+
+  {% endif %}
+
   <!-- DataTales Example -->
   {% for challenge in challenges %}
       <div class="card shadow mb-4">
@@ -108,7 +128,7 @@
         </div>
         {% if current_user.has_role('Admin') %}
         <div class="card-footer">
-          <p><b>Solved by:</b></p>
+          <p><b>Solved by ({{challenge.solver_names | length}}):</b></p>
           {% for solver in challenge.solver_names %}
             <span class="badge badge-success">{{solver}}</span>
           {% endfor %}
