@@ -12,7 +12,7 @@
       <!-- Bar Chart -->
       <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Leaderboard</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
         </div>
         <div class="card-body">
           <table class="table">
@@ -37,6 +37,31 @@
               </tr>
               {% endfor %}
             </table>
+        </div>
+      </div>
+      <!-- Bar Chart -->
+      <div class="card shadow mb-8">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+        </div>
+        <div class="card-body">
+          <form method="POST"  enctype="multipart/form-data" action="{{ url_for('auth.create_users_from_file') }}" id="fileuploadform">
+            <div class="form-group">
+              <label for="formUpload" class="form-label">Click to upload file (Must be csv with columns: Username, Password, Email (optional))</label>
+                <input class="form-control" type="file" name="file" required>
+            </div>
+            <div class="form-group">
+              <label for="teamSelect"> Select a Team</label>
+              <select class="form-control" id="=teamSelect" name="team_id">
+                {% for team in teams %}
+                  <option value="{{ team.id }}">{{ team.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <input type="submit" class="btn btn-primary btn-block" value="Submit">
+            </div>
+          </form>
         </div>
       </div>
       </div><!-- end of row-->

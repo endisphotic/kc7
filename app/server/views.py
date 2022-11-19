@@ -135,8 +135,10 @@ def manage_teams():
 @login_required
 def manage_users():
     user_list = Users.query.all()
+    teams = Team.query.all()
     return render_template("admin/manage_users.html",
-                           users=user_list)
+                           users=user_list,
+                           teams=teams)
 
 
 @main.route("/mitigations")

@@ -1,9 +1,15 @@
 
+import io
+import csv
+
 # Import flask dependencies
 from flask import Blueprint, request, render_template, \
                   flash, g, session, redirect, url_for
 from flask_login import login_user, logout_user , current_user , \
      login_required
+from werkzeug.utils import secure_filename
+
+
 
 from app.server.models import *
 from app.server.auth.forms import EmailForm, PasswordForm
@@ -47,14 +53,15 @@ def logout():
 
 
 @auth.route('/register', methods=['GET', 'POST'])
-def register():
+def register(username:str=None, password:str=None, email:str=None, team_id:int=None, via_gui=True):
     if request.method == 'GET':
         teams = Team.query.filter(Team.name!="admins").all()
         return render_template('auth/register.html', teams=teams)
-    username = request.form['username']
-    password = request.form['password']
-    email = request.form['email']
-    team_id = request.form['team_id']
+
+    username = username or request.form['username']
+    password = password or request.form['password']
+    email = email or request.form['email']
+    team_id = team_id or request.form['team_id']
 
     username_exists, email_exists = False, False
     try:
@@ -65,6 +72,7 @@ def register():
 
     if username_exists or email_exists:
         flash("Sorry, an account with this username or email already exists", "error")
+        print(username, email)
     else:
         try:
             print("team id is %s" % team_id)
@@ -80,10 +88,42 @@ def register():
             #                       username=username)
             #send_email("Welcome to the attendance app!", email, html)
         except Exception as e:
-            print("failed to create user: %s" % e)
+            print(f"failed to create user {username}: {e}")
             flash("Oops, something went wrong in creating your account" , "error")
 
-    return redirect(url_for('auth.login'))
+    if via_gui:
+        return redirect(url_for('auth.login'))
+
+@auth.route('/bulkuserregistration', methods=['GET', 'POST'])
+def create_users_from_file():
+    """take values from csv and call register function to register them"""
+    pass
+    file = request.files['file']
+    team_id = request.form['team_id']
+
+    # Check if the file is one of the allowed types/extensions
+    if file and ".csv" in file.filename:   ### make this better
+        # Make the filename safe, remove unsupported chars
+        filename = secure_filename(file.filename)
+        with io.TextIOWrapper(request.files["file"], encoding="utf-8", newline='\n') as text_file:
+            reader = csv.reader(text_file, delimiter=';')                
+            for row in reader:
+                if isinstance(row, list):
+                    row = row[0].split(",")
+                if row[0].lower() == "username".lower():
+                    # this is the header
+                    continue
+
+                username = row[0]
+                password = row[1]
+                email = row[2] or f"{username}@email.com" #hack so we don't always have to provide an email addr
+                print("sending reuest")
+                register(username, password, email, team_id, via_gui=False)
+                flash('Users successfully registered', "success")
+    else:
+        print("this ain't no csv")
+
+    return redirect(url_for('main.manage_users'))
 
 
 @auth.route('/reset', methods=["GET", "POST"])
