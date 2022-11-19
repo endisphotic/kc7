@@ -283,6 +283,33 @@ def create_challenge():
     db.session.commit()
     flash(f"Added new challenge: {challenge.name}", "success")
     return redirect(url_for('main.challenges'))
+
+@main.route('/editchallenge', methods=['POST', 'GET'])
+@login_required
+@roles_required('Admin')
+def edit_challenge():
+    """Edit all the values for a challenge"""
+    # get all the values from the form
+    challenge_id = request.form['challenge_id']
+    name =  request.form['challenge_name']
+    value = request.form['value']
+    description = request.form['description']
+    answer = request.form['answer']
+
+    # find the challenge db object using its id from the form
+    challenge = db.session.query(Challenges).get(1)
+
+    # update all the values
+    challenge.name = name
+    challenge.value = value
+    challenge.description = description
+    challenge.answer = answer
+
+    # commit updates to the db
+    db.session.add(challenge)
+    db.session.commit()
+    flash(f"Updated the challenge: {challenge.name}", "success")
+    return redirect(url_for('main.challenges'))
                            
 @main.route('/deletechallenge', methods=['POST', 'GET'])
 @login_required
@@ -308,10 +335,10 @@ def solve_challenge():
     challenge_id = request.form['challenge_id']
     challenge = db.session.query(Challenges).get(challenge_id)
     print(challenge.solvers)
-    if answer == challenge.answer:
+    if answer.lower() in [a.lower() for a in challenge.answer.split(";")]:
         print("answer is correct")
         try:
-            solve = Solves(challenge_id=challenge_id, user_id=current_user.id)
+            solve = Solves(challenge_id=challenge_id, user_id=current_user.id, username=current_user.username)
             db.session.add(solve)
             db.session.commit()
             flash("Correct", "success")

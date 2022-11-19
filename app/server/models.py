@@ -279,6 +279,12 @@ class Challenges(db.Model):
     def solvers(self) -> "list[int]":
         return list(set([solver.user_id for solver in self.get_solvers()]))
 
+    @property
+    def solver_names(self) -> "list[str]":
+        """Take a list of user_ids for solvers and returns their names"""
+        return list(set([solver.username for solver in self.get_solvers()]))
+
+
     def get_solvers(self):
         return Solves.query.filter_by(challenge_id=self.id)
         
@@ -292,13 +298,15 @@ class Challenges(db.Model):
 # Define the UserRoles association table
 class Solves(Base):
     __tablename__ = 'solves'
-    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
-    challenge_id = db.Column(db.Integer, db.ForeignKey('challenges.id', ondelete="CASCADE"))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete="CASCADE"))
+    id                          = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    challenge_id                = db.Column(db.Integer, db.ForeignKey('challenges.id', ondelete="CASCADE"))
+    user_id                     = db.Column(db.Integer, db.ForeignKey('users.user_id', ondelete="CASCADE"))
+    username                   = db.Column(db.String(50))  
 
-    def __init__(self, challenge_id:int, user_id:int):
+    def __init__(self, challenge_id:int, user_id:int, username:str="na"):
         self.challenge_id = challenge_id
         self.user_id = user_id
+        self.username = username
 
 
 

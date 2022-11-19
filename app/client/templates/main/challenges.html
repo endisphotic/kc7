@@ -13,49 +13,6 @@
 <!-- Begin Page Content -->
 <div class="container-fluid">
  
-
-  <!-- DataTales Example -->
-  {% for challenge in challenges %}
-      <div class="card shadow mb-4">
-        <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">
-            {{challenge.name}} ({{challenge.value}} points)
-            {% if current_user.id in challenge.solvers %}
-             - ✅ Solved 
-            {% endif%}
-          </h6>
-          {% if current_user.has_role('Admin') %}
-          <form action="/deletechallenge" method="post">
-            <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
-            <input type="submit" class="btn btn-danger float-right btn-sm"  value="Delete Challenge"
-            onclick="return confirm('Are you sure you want to delete this user?')">
-          </form>
-          {% endif %}
-        </div>
-        <div class="card-body">
-           <p>{{ challenge.description }} </p>
-           <form class="form-inline" method="POST" action="/solve">
-            <div class="form-group mx-sm-3 mb-2">
-              <label for="answer" class="sr-only">Answer</label>
-                {% if current_user.id in challenge.solvers %}
-                 <input type="text" class="form-control" id="answer" name="answer" value="{{challenge.answer}}" readonly>
-                {% else %}
-                <input type="text" class="form-control" id="answer" name="answer" placeholder="Answer">
-                {% endif%}
-              <input type="hidden" name="challenge_id"  value="{{ challenge.id}}" > 
-            </div>
-            <input type="submit" class="btn btn-primary btn-sm mb-2" value="Submit"
-            {% if current_user.id in challenge.solvers %}
-              disabled
-            {% endif%}  
-            >
-          </form>
-        </div>
-      </div>
-
-  {% endfor %}
-  
-
   {% if current_user.has_role('Admin') %}
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
@@ -86,8 +43,82 @@
     </div>
   </div>
   {% endif %}
+  
+  <!-- DataTales Example -->
+  {% for challenge in challenges %}
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            {{challenge.name}} ({{challenge.value}} points)
+            {% if current_user.id in challenge.solvers %}
+             - ✅ Solved 
+            {% endif%}
+          </h6>
+          {% if current_user.has_role('Admin') %}
+          <form action="/deletechallenge" method="post">
+            <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
+            <input type="submit" class="btn btn-danger float-right btn-sm"  value="Delete Challenge"
+            onclick="return confirm('Are you sure you want to delete this user?')">
+          </form>
+          {% endif %}
+        </div>
+        <div class="card-body">
+            {% if current_user.has_role('Admin') %}
+            <form method="POST" action="/editchallenge">
+              <div class="form-group">
+                <label for="challengeName">Challenge Name</label>
+                <input type="text" value="{{challenge.name}}" class="form-control" id="challengeName" placeholder="Name" name="challenge_name">
+              </div>
+              <div class="form-group">
+                <label for="challengeValue">Value (points)</label>
+                <input type="number"  value="{{challenge.value}}" class="form-control" id="challengeValue" value="10" name="value">
+              </div>
+              <div class="form-group">
+                <label for="challengeDesc">Question/Description</label>
+                <input type="textarea"  value="{{challenge.description}}" class="form-control" id="challengeDesc"
+                 name="description">
+              </div>
+              <div class="form-group">
+                <label for="challengeAnswer">Answer</label>
+                <input type="text"  value="{{challenge.answer}}" class="form-control" id="challengeAnswer" placeholder="Answer" name="answer" rows="3">
+              </div>
+              <input type="hidden" value="{{challenge.id}}" name="challenge_id" >
+              <input type="submit" class="btn btn-primary btn-block" value="Submit">
+            </form>
+            {% else %}
+                <p>{{ challenge.description }} </p>
+             
+           <form class="form-inline" method="POST" action="/solve">
+            <div class="form-group mx-sm-3 mb-2">
+              <label for="answer" class="sr-only">Answer</label>
+                {% if current_user.id in challenge.solvers %}
+                 <input type="text" class="form-control" id="answer" name="answer" value="{{challenge.answer}}" readonly>
+                {% else %}
+                <input type="text" class="form-control" id="answer" name="answer" placeholder="Answer">
+                {% endif%}
+              <input type="hidden" name="challenge_id"  value="{{ challenge.id}}" > 
+            </div>
+            <input type="submit" class="btn btn-primary btn-sm mb-2" value="Submit"
+            {% if current_user.id in challenge.solvers %}
+              disabled
+            {% endif%}  
+            >
+          </form>
+          {% endif %}
+        </div>
+        {% if current_user.has_role('Admin') %}
+        <div class="card-footer">
+          <p><b>Solved by:</b></p>
+          {% for solver in challenge.solver_names %}
+            <span class="badge badge-success">{{solver}}</span>
+          {% endfor %}
+        </div>
+        {% endif%}
 
+      </div>
 
+  {% endfor %}
+  
 
 </div>
 
