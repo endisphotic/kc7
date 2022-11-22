@@ -305,10 +305,10 @@ def create_challenges_from_file():
         # Make the filename safe, remove unsupported chars
         filename = secure_filename(file.filename)
 
+        # Rows are Name, Value, Description, Answer
         with io.TextIOWrapper(request.files["file"], encoding="utf-8", newline='\n') as text_file:
             reader = csv.reader(text_file, delimiter=';')                
             for row in reader:
-                print(row)
                 if isinstance(row, list):
                     row = row[0].split(",")
                 if row[0].lower() == "name":
@@ -342,7 +342,7 @@ def edit_challenge():
     answer = request.form['answer']
 
     # find the challenge db object using its id from the form
-    challenge = db.session.query(Challenges).get(1)
+    challenge = db.session.query(Challenges).get(challenge_id)
 
     # update all the values
     challenge.name = name

@@ -117,8 +117,7 @@ def create_users_from_file():
                 username = row[0]
                 password = row[1]
                 email = row[2] or f"{username}@email.com" #hack so we don't always have to provide an email addr
-                print("sending reuest")
-                register(username, password, email, team_id, via_gui=False)
+                register(username=username, password=password, email=email, team_id=team_id, via_gui=False)
                 flash('Users successfully registered', "success")
     else:
         print("this ain't no csv")
